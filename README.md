@@ -16,7 +16,7 @@ Measured on an iPhone 14 Pro viewport (393×660), dsh `0.1.0-rc.6`, before this 
 | Sidebar expanded | takes 71% of the screen and **squeezes** chat to 113px | overlays; chat keeps its full **393px** |
 | After tapping a session | stays open, so you read in the 113px slot | closes itself |
 | Dismissing it | only via the collapse button | tap anywhere on the scrim |
-| Settings sheet | 800px two-column layout crammed into 393px; every English word wraps; value pickers fall off-screen | full-screen single column, nav scrolls horizontally |
+| Settings sheet | 800px two-column layout crammed into 393px; every English word wraps; value pickers fall off-screen | full-screen single column, text wraps normally, pickers on-screen |
 | Clipped elements in settings | 7 | 1 |
 
 This is not a bug upstream — it is a stated contract. From the column solver in `@deepseek-ai/dsh-client-ui-layout`:
