@@ -1,0 +1,5 @@
+# Host stub so dsh's client-modules scanner can see this package's `dsh.client`.
+# All logic is client-side (src/client.js). Do not delete this entry.
+- insert:
+    - id: dsh-thumb-shell
+      name: dsh-thumb

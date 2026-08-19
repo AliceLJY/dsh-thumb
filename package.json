@@ -1,0 +1,25 @@
+{
+  "name": "dsh-thumb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A phone shell for the DeepSeek Harness web GUI: sidebar becomes an overlay drawer, tapping a session closes it, settings goes full-screen single column. Zero host hashes.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./src/client.js",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  },
+  "files": ["src", "cordis.patch.yml", "package.json", "README.md"]
+}
