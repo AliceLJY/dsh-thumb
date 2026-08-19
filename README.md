@@ -62,6 +62,7 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 
 - **Hover tooltips can still overflow the right edge** (the dark card when hovering a workspace row). Deliberately not fixed: its classes (`_card` / `_copyable`) are too generic to target safely, and doing it properly would mean scanning every `position: fixed` layer each frame and clamping them back into the viewport — an unclear blast radius for what is a cosmetic issue that blocks nothing. The right fix belongs upstream, in the tooltip's own touch handling.
 - **Only tested at the iPhone 14 Pro viewport (393×660) and desktop 1440×900.** Tablet-ish widths (768–1023px) take the same drawer path but were not measured — at those sizes a 280px sidebar only costs a third of the screen, so stock behaviour is far less bad and the drawer may not be an improvement. If it feels wrong on an iPad, lower the breakpoint from 1023px to 767px.
+- **The settings nav still stacks vertically** instead of scrolling horizontally. The `flex-direction: row` rule lands on a wrapper that is not the one actually laying those items out, so it costs some vertical space at the top of the sheet. Left as is: the sheet went from unusable to usable, and chasing the exact nav container is polish, not repair.
 - **A change to how upstream lays out its columns means updating this.** The locators are the four entries in `LOCATORS` at the top of `src/client.js` — a minutes-long edit.
 
 ## Verification
