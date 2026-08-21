@@ -4,6 +4,8 @@ A phone shell for the DeepSeek Harness (dsh) web GUI. The sidebar stops squeezin
 
 [中文说明](./README_CN.md)
 
+> **Personal tool, published as-is.** Written for one person's phone and one dsh version (`0.1.0-rc.6`). No maintenance and no issue response are promised. If a dsh upgrade breaks it, the four entries in `LOCATORS` at the top of `src/client.js` are where to look — that is a minutes-long edit.
+
 ## Why
 
 On a phone, dsh's **first screen is fine** — the sidebar auto-collapses to a 56px icon rail and the composer fits. Everything breaks only after the sidebar is expanded, which happens to be the one path you must take to switch sessions.
@@ -67,7 +69,7 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 
 ## Verification
 
-The same Playwright suite runs before and after: 13 assertions, including desktop regression and the off switch. Baseline screenshots and the repro live in the dated audit folder on the Desktop — exact path in [README_CN](./README_CN.md#验证).
+The same Playwright suite runs before and after: 13 assertions, including desktop regression and the off switch. The baseline screenshots are not published — they show real workspace and session titles. The three traps below are what you actually need to reproduce the run.
 
 Three traps worth knowing before reproducing it:
 

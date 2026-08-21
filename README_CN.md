@@ -2,6 +2,10 @@
 
 给 DeepSeek Harness（dsh）网页版做的手机外壳。侧栏从「挤压聊天区」改成「覆盖式抽屉」，点会话自动收起，设置面板改全屏单列。桌面端一点不碰。
 
+[English](./README.md)
+
+> **个人自用工具，按原样发布。** 是照着一个人的手机、一个 dsh 版本（`0.1.0-rc.6`）写的，不承诺维护、不承诺响应 issue。dsh 升级后失效的话，改 `src/client.js` 顶部 `LOCATORS` 那四条定位器就行，是分钟级的事。
+
 ## 为什么需要它
 
 dsh 的网页界面在手机上**首屏是正常的**——侧栏自动收成 56px 图标条，输入框完整。问题全在侧栏展开之后，而那正是手机上切会话的必经路径。
@@ -27,7 +31,7 @@ dsh 的网页界面在手机上**首屏是正常的**——侧栏自动收成 56
 
 ```bash
 # 装（profile 目录任意，--profile 指定即可）
-dsh plugin --profile web add link:/absolute/path/to/dsh-thumb
+dsh plugin --profile web add link:/你克隆到的绝对路径/dsh-thumb
 # 确认 ~/.dsh/profiles/web/package.json 的 dsh.profile.bundles 里有 "dsh-thumb"，然后重启服务
 
 # 卸
@@ -65,7 +69,7 @@ dsh plugin --profile web remove dsh-thumb
 
 ## 验证
 
-改造前后各跑一遍同一套 Playwright 脚本，13 项断言（含桌面回归与关闭开关）。基线截图和复现方法在 `<local baseline folder — not published>`。
+改造前后各跑一遍同一套 Playwright 脚本，13 项断言（含桌面回归与关闭开关）。基线截图没有随仓库发布——上面有真实的工作区名和会话标题。下面三个坑才是复现时真正需要的东西。
 
 复现时会踩到的三个坑，一并记在这：
 
