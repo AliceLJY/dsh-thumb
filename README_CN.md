@@ -31,13 +31,21 @@ dsh 的网页界面在手机上**首屏是正常的**——侧栏自动收成 56
 ## 装 / 卸 / 临时关
 
 ```bash
-# 装（profile 目录任意，--profile 指定即可）
-dsh plugin --profile web add link:/你克隆到的绝对路径/dsh-thumb
+# 装
+dsh plugin --profile web add github:AliceLJY/dsh-thumb
 # 确认 ~/.dsh/profiles/web/package.json 的 dsh.profile.bundles 里有 "dsh-thumb"，然后重启服务
 
 # 卸
 dsh plugin --profile web remove dsh-thumb
 # 同样确认 bundles 数组里已移除，再重启
+```
+
+没有 npm 包：`dsh plugin add` 把参数直接交给 pnpm，所以 `github:` 规格能直接装仓库。冷存储下实测 8.9 秒，dsh 会自己把它追加进 `dsh.profile.bundles`。
+
+想在本地改着用？同一条命令换成路径即可：
+
+```bash
+dsh plugin --profile web add link:/绝对路径/dsh-thumb
 ```
 
 ⚠️ **卸载/回滚要两件一起做**：`package.json` 和 `node_modules` 里的 link。只还原 `package.json` 的话，下次 `pnpm add` 会看到 link 还在、判定 "Already up to date"，**不写任何东西也不报错**——看起来装上了，实际没有。

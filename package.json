@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "A phone shell for the DeepSeek Harness web GUI: sidebar becomes an overlay drawer, tapping a session closes it, settings goes full-screen single column. Zero host class hashes.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis-plugin",
+    "mobile",
+    "responsive",
+    "ui"
+  ],
   "type": "module",
   "main": "./src/index.js",
   "exports": {

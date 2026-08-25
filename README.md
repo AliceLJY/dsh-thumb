@@ -32,12 +32,22 @@ With `SIDEBAR_DEFAULT = 280`, a 393px viewport gives exactly `393 − 280 = 113`
 
 ```bash
 # install
-dsh plugin --profile web add link:/absolute/path/to/dsh-thumb
+dsh plugin --profile web add github:AliceLJY/dsh-thumb
 # confirm "dsh-thumb" is in dsh.profile.bundles in ~/.dsh/profiles/web/package.json, then restart the service
 
 # remove
 dsh plugin --profile web remove dsh-thumb
 # again, confirm it is gone from the bundles array, then restart
+```
+
+There is no npm package: `dsh plugin add` hands its arguments to pnpm, so a
+`github:` specifier installs the repository directly. Measured at 8.9s on a
+cold store, and dsh appends it to `dsh.profile.bundles` on its own.
+
+Working on it locally instead? Point the same command at a path:
+
+```bash
+dsh plugin --profile web add link:/absolute/path/to/dsh-thumb
 ```
 
 ⚠️ **Rolling back means undoing two things**: `package.json` *and* the link in `node_modules`. Restore only the former and the next `pnpm add` sees the link still present, decides "Already up to date", and **writes nothing while reporting success** — it looks installed but isn't.
