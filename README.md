@@ -59,6 +59,23 @@ Behaviour goes through official interfaces too: closing the drawer calls `ctx.la
 
 **The layout rules apply only when both conditions hold**: viewport ≤1023px (matching upstream's `SIDEBAR_AUTO_COLLAPSE = 1024`, so there is only one breakpoint in play) **and** the sidebar has been manually expanded. The 56px rail is left entirely alone — it already works.
 
+### Is the drawer still worth it on a tablet?
+
+An earlier version of this file guessed that it stops being worth it somewhere around tablet widths, and suggested dropping the breakpoint to 767px. Measured, that guess was wrong.
+
+What matters is the state you are left in *after tapping a session*, since that is the path you have to take to switch sessions. Stock leaves the sidebar open, so the transcript stays at `width − 280`. The shell closes it, leaving the 56px rail and `width − 56`:
+
+| viewport | stock | with the shell | gain |
+|---:|---:|---:|---:|
+| 393px | 113px | 337px | **+198%** |
+| 480px | 200px | 424px | +112% |
+| 604px | 324px | 548px | +69% |
+| 768px | 488px | 712px | **+46%** |
+| 900px | 620px | 844px | +36% |
+| 1023px | 743px | 967px | **+30%** |
+
+The gain shrinks with width, as expected — but it never inverts anywhere inside the supported range. Lowering the breakpoint would switch off something still worth 30–46% at the sizes it was supposed to help. The 1023px breakpoint stays.
+
 **The density rules are the one deliberate exception**: they apply at ≤1023px with the drawer shut, because that is the state you read a transcript in. On the measured session that is 610px of column down to 490px — 60px of it from the gap between turns alone (16px → 10px), which costs nothing to interact with. Body text goes 16px/28px → 14px/21px and the action buttons 28px → 24px; the buttons were already under the 44px iOS touch target, so that last one is a trade, and `--thumb-hit` at the top of the stylesheet puts it back.
 
 Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`, no scrim, settings still an 800px two-column sheet.
@@ -66,7 +83,7 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 ## Known limitations
 
 - **Hover tooltips can still overflow the right edge** (the dark card when hovering a workspace row). Deliberately not fixed: its classes (`_card` / `_copyable`) are too generic to target safely, and doing it properly would mean scanning every `position: fixed` layer each frame and clamping them back into the viewport — an unclear blast radius for what is a cosmetic issue that blocks nothing. The right fix belongs upstream, in the tooltip's own touch handling.
-- **Only tested at the iPhone 14 Pro viewport (393×660) and desktop 1440×900.** Tablet-ish widths (768–1023px) take the same drawer path but were not measured — at those sizes a 280px sidebar only costs a third of the screen, so stock behaviour is far less bad and the drawer may not be an improvement. If it feels wrong on an iPad, lower the breakpoint from 1023px to 767px.
+- **Measured at 393, 480, 560, 604, 640, 700, 768, 900 and 1023px, plus desktop 1440×900** — see the table under [Scope](#scope). Phone sizes are the ones used daily; the rest were measured once, not lived in.
 - **The settings nav still stacks vertically** instead of scrolling horizontally. The `flex-direction: row` rule lands on a wrapper that is not the one actually laying those items out, so it costs some vertical space at the top of the sheet. Left as is: the sheet went from unusable to usable, and chasing the exact nav container is polish, not repair.
 - **The action rows under assistant replies keep their 28px** while the ones under user messages shrink to 24px. They sit in a second flex wrapper and moved for none of `height`, `align-self` or `min-height`, and no rule naming those classes sets a height at all — so whatever sizes them needs a wider probe than a class-name scan. Left alone deliberately: it is 12px on a three-turn session, roughly 2% of the column.
 - **A change to how upstream lays out its columns means updating this.** The locators are the four entries in `LOCATORS` at the top of `src/client.js` — a minutes-long edit.
@@ -74,10 +91,10 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 ## Verification
 
 ```bash
-node test/smoke.mjs        # 19 assertions against a running dsh
+node test/smoke.mjs        # 21 assertions against a running dsh
 ```
 
-The suite drives a real dsh instance at the phone viewport and again at 1440×900: locators stamped, the chat keeping full width behind the drawer, the four density numbers, containment, the off switch, and a desktop regression pass that asserts body text is still 16px there. One assertion is end-to-end rather than a property check — it loads the same transcript twice, once with `?thumb=0`, and requires the shell's version to be at least 15% shorter.
+The suite drives a real dsh instance at the phone viewport and again at 1440×900: locators stamped, the chat keeping full width behind the drawer, the four density numbers, containment, tablet width, the off switch, and a desktop regression pass that asserts body text is still 16px there. One assertion is end-to-end rather than a property check — it loads the same transcript twice, once with `?thumb=0`, and requires the shell's version to be at least 15% shorter.
 
 It has caught two real regressions so far, and both are worth knowing about.
 

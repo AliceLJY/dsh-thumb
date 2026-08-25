@@ -30,6 +30,7 @@ const require_ = createRequire(import.meta.url);
 const { chromium } = require_(PW_ROOT);
 
 const PHONE = { width: 393, height: 660 };
+const TABLET = { width: 768, height: 900 };
 const DESKTOP = { width: 1440, height: 900 };
 
 let pass = 0, fail = 0;
@@ -191,6 +192,39 @@ const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-pro
     ok('text buttons outside the transcript keep their width',
        visible.length > 0 && squeezed.length === 0,
        'visible=' + visible.length + ' squeezed=' + JSON.stringify(squeezed));
+  }
+  await ctx.close();
+}
+
+// ------------------------------------------------------------------ tablet
+{
+  console.log('\ntablet width (768x900)');
+  // The README used to guess that the drawer stops being worth it around
+  // tablet sizes and suggested dropping the breakpoint to 767px. Measured, it
+  // is wrong: after tapping a session, stock leaves the transcript at
+  // width-280 because the sidebar stays open, while the shell closes it and
+  // leaves width-56. At 768px that is 488px against 712px. The gain shrinks
+  // with width but never inverts inside the supported range, so the assertion
+  // here is that the top of that range still behaves.
+  const ctx = await browser.newContext({ viewport: TABLET });
+  const page = await ctx.newPage();
+  const opened = await openSession(page);
+  if (!opened) {
+    console.log('  skip  no existing session — tablet behaviour not asserted');
+  } else {
+    const m = await page.evaluate(() => {
+      const c = document.querySelector('[class*="centerCol"]');
+      const s = document.querySelector('[class*="sidebarCol"]');
+      return {
+        center: c ? Math.round(c.getBoundingClientRect().width) : null,
+        side: s ? Math.round(s.getBoundingClientRect().width) : null,
+      };
+    });
+    // Tapping a session must leave the rail, not the expanded sidebar.
+    ok('drawer closes itself at tablet width', m.side !== null && m.side <= 64, 'sidebar=' + m.side);
+    ok('transcript gets the width the sidebar gave back',
+       m.center !== null && m.center >= TABLET.width - 64,
+       'center=' + m.center + ' of ' + TABLET.width);
   }
   await ctx.close();
 }
