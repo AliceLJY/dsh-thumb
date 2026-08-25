@@ -71,6 +71,23 @@ window.__ModuleLoader__.load({
 			'settings-content': '[class*="_content"]',
 		};
 
+		/**
+		 * Scope for every density rule below.
+		 *
+		 * The center pane mounts more than the transcript — the trace view lives
+		 * there too, with its own toolbar of buttons. Selectors written against
+		 * message parts therefore have to say so, or they reach the trace view as
+		 * well. That is not hypothetical: a first cut of these rules sized
+		 * `[class*="_actions"] > button` to 24px square, which is right for the
+		 * icon buttons under a reply and wrong for the trace toolbar's text
+		 * buttons, which collapsed into an unreadable overlap. Reported from a
+		 * phone, and only then reproduced here.
+		 *
+		 * The column is identified by the message items it holds rather than by
+		 * its own class, since `_column` alone is not unique to it.
+		 */
+		const FLOW = '[data-thumb="center"] [class*="_column"]:has([class*="_flowItem"])';
+
 		function disabled() {
 			try {
 				if (typeof location !== 'undefined'
@@ -211,22 +228,19 @@ window.__ModuleLoader__.load({
 
   /* The single biggest win, and the one with no interaction cost: the gap
      between turns. 16px -> 10px is 60px back on a three-turn session.
-     :has() narrows this to the column that actually holds message items. The
-     center pane also mounts the trace view, which has columns of its own, and
-     a bare [class*="_column"] would retune those too -- a selector matching
-     more than it was measured against. If :has() is ever unavailable the rule
-     drops out whole and the gap returns to the upstream 16px, which is the
-     right way for it to fail. */
-  [data-thumb="center"] [class*="_column"]:has([class*="_flowItem"]) {
+     Scoped through FLOW like everything else here; if :has() is ever
+     unavailable the whole block drops out and the transcript returns to
+     upstream sizing, which is the right way for it to fail. */
+  ${FLOW} {
     gap: var(--thumb-turn-gap) !important;
   }
 
-  [data-thumb="center"] [class*="_markdown"] {
+  ${FLOW} [class*="_markdown"] {
     font-size: var(--thumb-text) !important;
     line-height: var(--thumb-leading) !important;
   }
 
-  [data-thumb="center"] [class*="_bubble"] {
+  ${FLOW} [class*="_bubble"] {
     font-size: var(--thumb-text) !important;
     line-height: var(--thumb-leading) !important;
     padding: 7px 12px !important;
@@ -242,24 +256,24 @@ window.__ModuleLoader__.load({
      way on purpose: it is 12px on a three-turn session, about 2% of the column,
      and running it down means first widening the probe, since whatever sizes
      them does not surface in a scan for rules naming these classes. */
-  [data-thumb="center"] [class*="_actions"] {
+  ${FLOW} [class*="_actions"] {
     gap: 6px !important;
     height: auto !important;
   }
-  [data-thumb="center"] [class*="_actions"] > button {
+  ${FLOW} [class*="_actions"] > button {
     width: var(--thumb-hit) !important;
     height: var(--thumb-hit) !important;
     min-width: var(--thumb-hit) !important;
     min-height: var(--thumb-hit) !important;
     padding: 4px !important;
   }
-  [data-thumb="center"] [class*="_actions"] > button svg {
+  ${FLOW} [class*="_actions"] > button svg {
     width: 15px !important;
     height: 15px !important;
   }
 
-  [data-thumb="center"] [class*="_timeStart"],
-  [data-thumb="center"] [class*="_timeEnd"] {
+  ${FLOW} [class*="_timeStart"],
+  ${FLOW} [class*="_timeEnd"] {
     font-size: var(--thumb-meta) !important;
   }
 }

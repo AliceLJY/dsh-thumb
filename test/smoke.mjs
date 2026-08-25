@@ -145,6 +145,56 @@ const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-pro
   await ctx.close();
 }
 
+// ------------------------------------------------------- density stays put
+{
+  console.log('\ndensity does not reach the trace view');
+  // The trace view mounts in the same center pane as the transcript, and its
+  // toolbar is made of text buttons. An early cut of the density rules sized
+  // every button under [class*="_actions"] to 24px square and collapsed those
+  // into an unreadable overlap -- reported from a phone, invisible to a suite
+  // that only ever looked at the conversation tab. Hence this block.
+  //
+  // The tab control does not take a click at phone width under Playwright, so
+  // open it at desktop size and then shrink the viewport: same mounted view,
+  // narrow layout, no navigation in between.
+  const ctx = await browser.newContext({ viewport: DESKTOP });
+  const page = await ctx.newPage();
+  await page.goto(URL_BASE, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(SETTLE);
+  for (const row of await page.$$('[class*="_sessionRow"]')) {
+    const t = (await row.textContent() || '').trim();
+    if (t && t !== '新会话' && t !== 'New session') { await row.click(); break; }
+  }
+  await page.waitForTimeout(4500);
+  let onTrace = false;
+  try { await page.locator('text=轨迹').first().click({ timeout: 8000 }); onTrace = true; }
+  catch { try { await page.locator('text=Trace').first().click({ timeout: 4000 }); onTrace = true; } catch {} }
+  if (!onTrace) {
+    console.log('  skip  could not open the trace tab — containment not asserted');
+  } else {
+    await page.waitForTimeout(2500);
+    await page.setViewportSize(PHONE);
+    await page.waitForTimeout(2500);
+    const outside = await page.evaluate(() => {
+      const flow = document.querySelector('[data-thumb="center"] [class*="_column"]:has([class*="_flowItem"])');
+      return [...document.querySelectorAll('[data-thumb="center"] button')]
+        .filter(b => !flow || !flow.contains(b))
+        .filter(b => (b.textContent || '').trim().length >= 4)
+        .map(b => ({ text: (b.textContent || '').trim().slice(0, 14), w: Math.round(b.getBoundingClientRect().width) }));
+    });
+    // A text button squeezed to icon size is the signature of the regression.
+    // Zero-width entries are buttons the trace view keeps mounted but hidden
+    // (a collapsed menu); they are not rendered at all, so there is no width
+    // for a rule to have taken away.
+    const visible = outside.filter(b => b.w > 0);
+    const squeezed = visible.filter(b => b.w <= 28);
+    ok('text buttons outside the transcript keep their width',
+       visible.length > 0 && squeezed.length === 0,
+       'visible=' + visible.length + ' squeezed=' + JSON.stringify(squeezed));
+  }
+  await ctx.close();
+}
+
 // ------------------------------------------------------------- off switch
 {
   console.log('\noff switch (?thumb=0, phone viewport)');

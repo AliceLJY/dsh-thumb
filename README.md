@@ -74,12 +74,18 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 ## Verification
 
 ```bash
-node test/smoke.mjs        # 18 assertions against a running dsh
+node test/smoke.mjs        # 19 assertions against a running dsh
 ```
 
-The suite drives a real dsh instance at the phone viewport and again at 1440×900: locators stamped, the chat keeping full width behind the drawer, the four density numbers, the off switch, and a desktop regression pass that asserts body text is still 16px there. One assertion is end-to-end rather than a property check — it loads the same transcript twice, once with `?thumb=0`, and requires the shell's version to be at least 15% shorter.
+The suite drives a real dsh instance at the phone viewport and again at 1440×900: locators stamped, the chat keeping full width behind the drawer, the four density numbers, containment, the off switch, and a desktop regression pass that asserts body text is still 16px there. One assertion is end-to-end rather than a property check — it loads the same transcript twice, once with `?thumb=0`, and requires the shell's version to be at least 15% shorter.
 
-It earns its keep: on its first run it failed the off switch, and the failure was real. `?thumb=0` only ever disabled the React component, and until the density rules landed that was enough — every rule was gated on a drawer attribute only a live component sets. The density rules apply with the drawer shut, so the stylesheet became load-bearing on its own and the switch no longer reached it. Fixed in `ensureStyle` / `stampFrame`, which now check the switch directly.
+It has caught two real regressions so far, and both are worth knowing about.
+
+**The off switch**, on the suite's first run. `?thumb=0` only ever disabled the React component, and until the density rules landed that was enough — every rule was gated on a drawer attribute only a live component sets. The density rules apply with the drawer shut, so the stylesheet became load-bearing on its own and the switch no longer reached it. `ensureStyle` and `stampFrame` now check it directly.
+
+**Containment**, which the suite did *not* catch — it came back from a phone. The center pane mounts the trace view as well as the transcript, and the trace toolbar is made of text buttons. `[class*="_actions"] > button` sized every one of them to 24px square, collapsing `Duration / Turns / Calls` into an unreadable overlap. Every density rule now goes through `FLOW`, a scope that identifies the transcript column by the message items it holds rather than by a class name. The lesson was not the selector; it was that a suite which only ever opens one tab will keep passing while a neighbouring view is broken. Hence the containment assertion — and it was verified by reintroducing the bug and watching it fail, which it does, naming the three buttons.
+
+Note for reproducing that one: the trace tab does not accept a Playwright click at phone width. Open it at desktop size and then shrink the viewport — same mounted view, narrow layout, no navigation in between.
 
 Screenshots from the runs are not published — they show real workspace and session titles.
 
