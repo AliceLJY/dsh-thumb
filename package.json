@@ -29,5 +29,8 @@
     "package.json",
     "README.md",
     "README_CN.md"
-  ]
+  ],
+  "scripts": {
+    "test": "node test/smoke.mjs"
+  }
 }

@@ -1,6 +1,6 @@
 # dsh-thumb
 
-A phone shell for the DeepSeek Harness (dsh) web GUI. The sidebar stops squeezing the chat and becomes an overlay drawer, tapping a session closes it, and the settings sheet goes full-screen single column. Desktop is untouched.
+A phone shell for the DeepSeek Harness (dsh) web GUI. The sidebar stops squeezing the chat and becomes an overlay drawer, tapping a session closes it, the settings sheet goes full-screen single column, and the transcript is retuned for a phone reading distance. Desktop is untouched.
 
 [中文说明](./README_CN.md)
 
@@ -20,6 +20,7 @@ Measured on an iPhone 14 Pro viewport (393×660), dsh `0.1.0-rc.6`, before this 
 | Dismissing it | only via the collapse button | tap anywhere on the scrim |
 | Settings sheet | 800px two-column layout crammed into 393px; every English word wraps; value pickers fall off-screen | full-screen single column, text wraps normally, pickers on-screen |
 | Clipped elements in settings | 7 | 1 |
+| Transcript height (3-turn session) | 610px — sized for a desktop reading distance | **490px**, a fifth shorter |
 
 This is not a bug upstream — it is a stated contract. From the column solver in `@deepseek-ai/dsh-client-ui-layout`:
 
@@ -56,7 +57,9 @@ Behaviour goes through official interfaces too: closing the drawer calls `ctx.la
 
 ## Scope
 
-**Nothing applies unless both conditions hold**: viewport ≤1023px (matching upstream's `SIDEBAR_AUTO_COLLAPSE = 1024`, so there is only one breakpoint in play) **and** the sidebar has been manually expanded. The 56px rail is left entirely alone — it already works.
+**The layout rules apply only when both conditions hold**: viewport ≤1023px (matching upstream's `SIDEBAR_AUTO_COLLAPSE = 1024`, so there is only one breakpoint in play) **and** the sidebar has been manually expanded. The 56px rail is left entirely alone — it already works.
+
+**The density rules are the one deliberate exception**: they apply at ≤1023px with the drawer shut, because that is the state you read a transcript in. On the measured session that is 610px of column down to 490px — 60px of it from the gap between turns alone (16px → 10px), which costs nothing to interact with. Body text goes 16px/28px → 14px/21px and the action buttons 28px → 24px; the buttons were already under the 44px iOS touch target, so that last one is a trade, and `--thumb-hit` at the top of the stylesheet puts it back.
 
 Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`, no scrim, settings still an 800px two-column sheet.
 
@@ -65,11 +68,20 @@ Desktop is verified unchanged: sidebar 280px, center 1160px, `position: static`,
 - **Hover tooltips can still overflow the right edge** (the dark card when hovering a workspace row). Deliberately not fixed: its classes (`_card` / `_copyable`) are too generic to target safely, and doing it properly would mean scanning every `position: fixed` layer each frame and clamping them back into the viewport — an unclear blast radius for what is a cosmetic issue that blocks nothing. The right fix belongs upstream, in the tooltip's own touch handling.
 - **Only tested at the iPhone 14 Pro viewport (393×660) and desktop 1440×900.** Tablet-ish widths (768–1023px) take the same drawer path but were not measured — at those sizes a 280px sidebar only costs a third of the screen, so stock behaviour is far less bad and the drawer may not be an improvement. If it feels wrong on an iPad, lower the breakpoint from 1023px to 767px.
 - **The settings nav still stacks vertically** instead of scrolling horizontally. The `flex-direction: row` rule lands on a wrapper that is not the one actually laying those items out, so it costs some vertical space at the top of the sheet. Left as is: the sheet went from unusable to usable, and chasing the exact nav container is polish, not repair.
+- **The action rows under assistant replies keep their 28px** while the ones under user messages shrink to 24px. They sit in a second flex wrapper and moved for none of `height`, `align-self` or `min-height`, and no rule naming those classes sets a height at all — so whatever sizes them needs a wider probe than a class-name scan. Left alone deliberately: it is 12px on a three-turn session, roughly 2% of the column.
 - **A change to how upstream lays out its columns means updating this.** The locators are the four entries in `LOCATORS` at the top of `src/client.js` — a minutes-long edit.
 
 ## Verification
 
-The same Playwright suite runs before and after: 13 assertions, including desktop regression and the off switch. The baseline screenshots are not published — they show real workspace and session titles. The three traps below are what you actually need to reproduce the run.
+```bash
+node test/smoke.mjs        # 18 assertions against a running dsh
+```
+
+The suite drives a real dsh instance at the phone viewport and again at 1440×900: locators stamped, the chat keeping full width behind the drawer, the four density numbers, the off switch, and a desktop regression pass that asserts body text is still 16px there. One assertion is end-to-end rather than a property check — it loads the same transcript twice, once with `?thumb=0`, and requires the shell's version to be at least 15% shorter.
+
+It earns its keep: on its first run it failed the off switch, and the failure was real. `?thumb=0` only ever disabled the React component, and until the density rules landed that was enough — every rule was gated on a drawer attribute only a live component sets. The density rules apply with the drawer shut, so the stylesheet became load-bearing on its own and the switch no longer reached it. Fixed in `ensureStyle` / `stampFrame`, which now check the switch directly.
+
+Screenshots from the runs are not published — they show real workspace and session titles.
 
 Three traps worth knowing before reproducing it:
 

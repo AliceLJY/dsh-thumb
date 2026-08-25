@@ -172,6 +172,90 @@ window.__ModuleLoader__.load({
     width: 100% !important;
     overflow-y: auto !important;
   }
+
+  /* Reading density.
+     The rules above are about layout; this block is about how much of a
+     conversation survives on one screen. Measured on the same 393x660
+     viewport, a three-turn session renders a 610px column that breaks down as
+     450px of content and 160px of gap -- ten 16px gaps between turns. The six
+     copy/like/dislike/branch rows add another 168px of that 450. Upstream
+     sizes all of it for a desktop reading distance, so a phone shows about two
+     turns per screen.
+
+     Unlike everything above, none of this is gated on the drawer: the
+     transcript is read with the drawer shut, so it has to hold in the default
+     state. It is scoped to [data-thumb="center"] instead, which reuses the
+     stamp the columns already carry -- message parts remount on every streamed
+     token, so stamping each of them would mean re-running the locator loop
+     continuously, while one ancestor selector costs nothing. It also means a
+     broken center locator takes the density rules down with it, rather than
+     leaving them applying somewhere unintended.
+
+     Suffixes used here (_column, _markdown, _bubble, _actions, _timeStart,
+     _timeEnd) each resolved to the expected nodes on rc.6. If upstream renames
+     one, that rule stops applying and the text returns to desktop size --
+     visible on sight, and harmless.
+
+     Sizes are custom properties so the scale can be retuned in one place. */
+  :root {
+    --thumb-text: 14px;
+    --thumb-leading: 1.5;
+    --thumb-meta: 12px;
+    --thumb-turn-gap: 10px;
+    /* Action buttons ship at 28px, already under the 44px iOS touch target.
+       24px is the deliberate trade: it buys 6px on every assistant turn at the
+       cost of a slightly smaller tap area. Raise it back to 28px here if the
+       buttons start getting missed. */
+    --thumb-hit: 24px;
+  }
+
+  /* The single biggest win, and the one with no interaction cost: the gap
+     between turns. 16px -> 10px is 60px back on a three-turn session. */
+  [data-thumb="center"] [class*="_column"] {
+    gap: var(--thumb-turn-gap) !important;
+  }
+
+  [data-thumb="center"] [class*="_markdown"] {
+    font-size: var(--thumb-text) !important;
+    line-height: var(--thumb-leading) !important;
+  }
+
+  [data-thumb="center"] [class*="_bubble"] {
+    font-size: var(--thumb-text) !important;
+    line-height: var(--thumb-leading) !important;
+    padding: 7px 12px !important;
+  }
+
+  /* Scoped to direct button children so the container itself is never resized:
+     [class*="_action"] would also match the _actions row that wraps them. */
+  /* Releasing the height is what actually shrinks the row: sizing the buttons
+     alone leaves it exactly as tall as before, because the row is not sized by
+     its contents. This lands on the rows under user messages (28px -> 24px).
+     The rows under assistant replies stay at 28px -- they sit in a second flex
+     wrapper and moved for none of height / align-self / min-height. Left that
+     way on purpose: it is 12px on a three-turn session, about 2% of the column,
+     and running it down means first widening the probe, since whatever sizes
+     them does not surface in a scan for rules naming these classes. */
+  [data-thumb="center"] [class*="_actions"] {
+    gap: 6px !important;
+    height: auto !important;
+  }
+  [data-thumb="center"] [class*="_actions"] > button {
+    width: var(--thumb-hit) !important;
+    height: var(--thumb-hit) !important;
+    min-width: var(--thumb-hit) !important;
+    min-height: var(--thumb-hit) !important;
+    padding: 4px !important;
+  }
+  [data-thumb="center"] [class*="_actions"] > button svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  [data-thumb="center"] [class*="_timeStart"],
+  [data-thumb="center"] [class*="_timeEnd"] {
+    font-size: var(--thumb-meta) !important;
+  }
 }
 
 /* Wide viewports get nothing at all: the media query above is the only place
@@ -180,6 +264,14 @@ window.__ModuleLoader__.load({
 
 		function ensureStyle() {
 			if (typeof document === 'undefined') return;
+			/* The off switch has to be checked here, not only in useIsPhone.
+			   Until the density rules landed, every rule was gated on the drawer
+			   attribute, which only a live component ever sets — so disabling the
+			   component was enough to neutralise the stylesheet. The density rules
+			   apply with the drawer shut, by design, which means an injected
+			   stylesheet is now load-bearing on its own and the switch has to
+			   reach it directly. Caught by test/smoke.mjs on its first run. */
+			if (disabled()) return;
 			if (document.getElementById(STYLE_ID)) return;
 			const tag = document.createElement('style');
 			tag.id = STYLE_ID;
@@ -197,6 +289,7 @@ window.__ModuleLoader__.load({
 		 * never apply — degrading to stock behaviour rather than to a broken one.
 		 */
 		function stampFrame() {
+			if (disabled()) return;
 			for (const [name, selector] of Object.entries(LOCATORS)) {
 				const el = document.querySelector(selector);
 				if (el && el.getAttribute('data-thumb') !== name) el.setAttribute('data-thumb', name);
