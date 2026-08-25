@@ -84,6 +84,8 @@ What matters is the state you are left in *after tapping a session*, since that 
 | 900px | 620px | 844px | +36% |
 | 1023px | 743px | 967px | **+30%** |
 
+Regenerate that table with `node test/measure-widths.mjs`; the file also explains why it measures the width you are left with rather than the width the drawer covers, which is what the first attempt got wrong.
+
 The gain shrinks with width, as expected — but it never inverts anywhere inside the supported range. Lowering the breakpoint would switch off something still worth 30–46% at the sizes it was supposed to help. The 1023px breakpoint stays.
 
 **The density rules are the one deliberate exception**: they apply at ≤1023px with the drawer shut, because that is the state you read a transcript in. On the measured session that is 610px of column down to 490px — 60px of it from the gap between turns alone (16px → 10px), which costs nothing to interact with. Body text goes 16px/28px → 14px/21px and the action buttons 28px → 24px; the buttons were already under the 44px iOS touch target, so that last one is a trade, and `--thumb-hit` at the top of the stylesheet puts it back.
