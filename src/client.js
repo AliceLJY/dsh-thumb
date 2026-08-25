@@ -210,8 +210,14 @@ window.__ModuleLoader__.load({
   }
 
   /* The single biggest win, and the one with no interaction cost: the gap
-     between turns. 16px -> 10px is 60px back on a three-turn session. */
-  [data-thumb="center"] [class*="_column"] {
+     between turns. 16px -> 10px is 60px back on a three-turn session.
+     :has() narrows this to the column that actually holds message items. The
+     center pane also mounts the trace view, which has columns of its own, and
+     a bare [class*="_column"] would retune those too -- a selector matching
+     more than it was measured against. If :has() is ever unavailable the rule
+     drops out whole and the gap returns to the upstream 16px, which is the
+     right way for it to fail. */
+  [data-thumb="center"] [class*="_column"]:has([class*="_flowItem"]) {
     gap: var(--thumb-turn-gap) !important;
   }
 
