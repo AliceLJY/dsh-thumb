@@ -61,7 +61,7 @@ window.__ModuleLoader__.load({
 			frame: '[class*="_frame"]',
 			sidebar: '[class*="sidebarCol"]',
 			center: '[class*="centerCol"]',
-			details: '[class*="detailsCol"]',
+			details: '[class*="rightbarCol"], [class*="detailsCol"]',
 		};
 
 		/** Settings sheet parts, resolved only while the sheet is mounted. */

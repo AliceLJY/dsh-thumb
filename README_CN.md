@@ -5,6 +5,8 @@
 [English](./README.md)
 
 > **个人自用工具，按原样发布。** 是照着一个人的手机、一个 dsh 版本（`0.1.0-rc.6`）写的，不承诺维护、不承诺响应 issue。dsh 升级后失效的话，改 `src/client.js` 顶部 `LOCATORS` 那四条定位器就行，是分钟级的事。
+>
+> 2026-10-21 在 dsh `0.2.1-rc.2` 上复测（同一 393×660 视口，Playwright）：抽屉和遮罩照常，原生仍把聊天压到 113px。唯一断掉的是右栏定位器——上游把 `detailsCol` 改名 `rightbarCol`——`LOCATORS.details` 现在两个名字都认。
 
 ## 为什么需要它
 

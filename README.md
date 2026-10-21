@@ -5,6 +5,8 @@ A phone shell for the DeepSeek Harness (dsh) web GUI. The sidebar stops squeezin
 [中文说明](./README_CN.md)
 
 > **Personal tool, published as-is.** Written for one person's phone and one dsh version (`0.1.0-rc.6`). No maintenance and no issue response are promised. If a dsh upgrade breaks it, the four entries in `LOCATORS` at the top of `src/client.js` are where to look — that is a minutes-long edit.
+>
+> Re-checked 2026-10-21 against dsh `0.2.1-rc.2` (same 393×660 viewport, Playwright): the drawer and the scrim still work, and stock still squeezes the chat to 113px. The one thing that had broken was the right-panel locator — upstream renamed `detailsCol` to `rightbarCol` — so `LOCATORS.details` now matches both names.
 
 ## Why
 
