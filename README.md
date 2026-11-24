@@ -32,6 +32,8 @@ With `SIDEBAR_DEFAULT = 280`, a 393px viewport gives exactly `393 − 280 = 113`
 
 ## Install / remove / switch off
 
+This is a plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). You need the `dsh` command first: `npm install -g @deepseek-ai/dsh` (see the upstream repo for platform notes).
+
 ```bash
 # install
 dsh plugin --profile web add github:AliceLJY/dsh-thumb

@@ -32,6 +32,8 @@ dsh 的网页界面在手机上**首屏是正常的**——侧栏自动收成 56
 
 ## 装 / 卸 / 临时关
 
+这是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的插件，要先有 `dsh` 命令：`npm install -g @deepseek-ai/dsh`（各平台的注意事项见上游仓库）。
+
 ```bash
 # 装
 dsh plugin --profile web add github:AliceLJY/dsh-thumb
